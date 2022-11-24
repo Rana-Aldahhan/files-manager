@@ -48,9 +48,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(Group::class);
     }
-    public function files()
+    public function ownedFiles()
     {
-        return $this->hasMany(File::class);
+        return $this->hasMany(File::class,'owner_id');
+    }
+    public function reservedFiles()
+    {
+        return $this->hasMany(File::class,'reserver_id');
     }
     public function joinedGroups()
     {
