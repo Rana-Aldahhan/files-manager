@@ -23,5 +23,12 @@ class Group extends Model
     {
         return $this->belongsToMany(File::class);
     }
+     /**
+     * methods
+     */
+    public function isPublicGroup()
+    {
+        return $this->id==1 || $this->name=='public';
+    }
 
 }

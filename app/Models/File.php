@@ -27,4 +27,16 @@ class File extends Model
     {
         return $this->hasMany(FileLog::class);
     }
+    /**
+     * methods
+     */
+    public function isFree()
+    {
+        return $this->status=='free' && $this->reserver_id==null;
+    }
+    public function isReserved()
+    {
+        return $this->status=='checkedIn' && $this->reserver_id!=null;
+    }
+
 }
