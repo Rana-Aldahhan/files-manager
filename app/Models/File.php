@@ -8,6 +8,24 @@ use Illuminate\Database\Eloquent\Model;
 class File extends Model
 {
     use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'user_id',
+        'path',
+        'created_at',
+    ];
+
+    protected $attributes = [
+    'status' => 'free',
+    ];
+
+
     /**
      * relations
      */
@@ -23,4 +41,5 @@ class File extends Model
     {
         return $this->hasMany(FileLog::class);
     }
+ 
 }
