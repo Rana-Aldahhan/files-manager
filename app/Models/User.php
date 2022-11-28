@@ -50,11 +50,11 @@ class User extends Authenticatable
     }
     public function ownedFiles()
     {
-        return $this->hasMany(File::class,'owner_id');
+        return $this->hasMany(File::class, 'owner_id');
     }
     public function reservedFiles()
     {
-        return $this->hasMany(File::class,'reserver_id');
+        return $this->hasMany(File::class, 'reserver_id');
     }
     public function joinedGroups()
     {
@@ -64,29 +64,33 @@ class User extends Authenticatable
      * methods
      */
     public function hasAccessToFile(File $file) //a user has access to file in his joined groups or in a public group
+
     {
-        $fileInUserJoinedGroups=false;
-        $this->joinedGroups()->get()->map(function($group) use ($file,&$fileInUserJoinedGroups){
-            if($group->files()->find($file->id)!=null)
-                $fileInUserJoinedGroups=true;
+        $fileInUserJoinedGroups = false;
+        $this->joinedGroups()->get()->map(function ($group) use ($file, &$fileInUserJoinedGroups) {
+            if ($group->files()->find($file->id) != null)
+                $fileInUserJoinedGroups = true;
         });
-        $fileInPublicGroup=false;
-        $publicGroup=Group::find(1);
-        if($publicGroup->files()->find($file->id)!=null)
-                $fileInPublicGroup=true;
+        $fileInPublicGroup = false;
+        $publicGroup = Group::find(1);
+        if ($publicGroup->files()->find($file->id) != null)
+            $fileInPublicGroup = true;
         return $fileInUserJoinedGroups || $fileInPublicGroup || $this->isFileOwner($file);
     }
-    public function hasReservedFile(File $file){
-        return $file->resever_id==$this->id;
+    public function hasReservedFile(File $file)
+    {
+        return $file->resever_id == $this->id;
     }
     public function isMemberOfGroup(Group $group)
     {
-        return $this->joinedGroups()->get()->find($group->id)!=null;
+        return $this->joinedGroups()->get()->find($group->id) != null;
     }
-    public function isGroupOwner(Group $group){
-        return $this->id==$group->owner_id;
+    public function isGroupOwner(Group $group)
+    {
+        return $this->id == $group->owner_id;
     }
-    public function isFileOwner(File $file){
-        return $this->id==$file->owner_id;
+    public function isFileOwner(File $file)
+    {
+        return $this->id == $file->owner_id;
     }
 }

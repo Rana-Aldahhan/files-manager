@@ -7,17 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class File extends Model
 {
+    protected $fillable = ['owner_id', 'reserver_id', 'path', 'name'];
     use HasFactory;
     /**
      * relations
      */
     public function owner()
     {
-        return $this->belongsTo(User::class,'owner_id');
+        return $this->belongsTo(User::class, 'owner_id');
     }
     public function reserver()
     {
-        return $this->belongsTo(User::class,'reserver_id');
+        return $this->belongsTo(User::class, 'reserver_id');
     }
     public function groups()
     {
@@ -32,11 +33,11 @@ class File extends Model
      */
     public function isFree()
     {
-        return $this->status=='free' && $this->reserver_id==null;
+        return $this->status == 'free' && $this->reserver_id == null;
     }
     public function isReserved()
     {
-        return $this->status=='checkedIn' && $this->reserver_id!=null;
+        return $this->status == 'checkedIn' && $this->reserver_id != null;
     }
 
 }
