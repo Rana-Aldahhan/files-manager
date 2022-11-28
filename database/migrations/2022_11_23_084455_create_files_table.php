@@ -15,10 +15,11 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('owner_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('reserver_id')->nullable()->references('id')->on('users')->onDelete('set null');
             $table->string('name');
             $table->string('path');
-            $table->enum('status',['checkedIn','free']);
+            $table->enum('status',['checkedIn','free'])->default('free');
             $table->timestamps();
         });
     }

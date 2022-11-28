@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use auth;
+use Carbon\Carbon;
 use App\Models\File;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 use function Ramsey\Uuid\Lazy\toString;
+use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
 {
@@ -30,9 +31,9 @@ class FileController extends Controller
         $timestamp = str_replace([' ', ':'], '-', $time);
 
         $file = File::create([
+            'owner_id' => auth()->user()->id,
             'name' => $request->name,
             'created_at' => $time,
-            'user_id' => 1,
             'path' => $timestamp . '-' . $request->name . '.' . $request->file('file')->getClientOriginalExtension(),
         ]);
 
@@ -53,7 +54,7 @@ class FileController extends Controller
         $file = File::find($id);
 
         $file->destroy($id);
-        Storage::disk('public')->delete("files/".$file->path);
+        Storage::disk('public')->delete("files/" . $file->path);
         return  response()->json([
             'data' => [],
         ], 200);

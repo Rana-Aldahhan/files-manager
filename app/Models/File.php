@@ -16,14 +16,15 @@ class File extends Model
      */
     protected $fillable = [
         'name',
-        'user_id',
+        'owner_id',
         'path',
         'created_at',
     ];
 
-    protected $attributes = [
-    'status' => 'free',
+    protected $hidden = [
+        'pivot',
     ];
+
 
 
     /**
@@ -31,7 +32,11 @@ class File extends Model
      */
     public function owner()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class,'owner_id');
+    }
+    public function reserver()
+    {
+        return $this->belongsTo(User::class,'reserver_id');
     }
     public function groups()
     {
@@ -41,5 +46,17 @@ class File extends Model
     {
         return $this->hasMany(FileLog::class);
     }
+    /**
+     * methods
+     */
+    public function isFree()
+    {
+        return $this->status=='free' && $this->reserver_id==null;
+    }
+    public function isReserved()
+    {
+        return $this->status=='checkedIn' && $this->reserver_id!=null;
+    }
+
  
 }

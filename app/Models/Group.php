@@ -8,6 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 class Group extends Model
 {
     use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'user_id',
+    ];
+    protected $hidden = ['created_at', 'updated_at'];
+    // protected $with = ['files:id,name', 'members:name,id'];
+
+
+
     /**
      * relations
      */
@@ -23,5 +38,11 @@ class Group extends Model
     {
         return $this->belongsToMany(File::class);
     }
-
+    /**
+     * methods
+     */
+    public function isPublicGroup()
+    {
+        return $this->id == 1 || $this->name == 'public';
+    }
 }
