@@ -1,11 +1,10 @@
 <?php
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\File;
+use App\Http\Controllers\AuthController;
 
-
+use App\Http\Controllers\GroupController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +21,10 @@ use App\Models\File;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 //authenticated routes
+
+
+
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get(
         '/files/{file}',
@@ -36,16 +39,30 @@ Route::middleware(['auth:sanctum'])->group(function () {
         }
     );
 
+    Route::get('/owned-groups', [GroupController::class, 'ownedGroups']);
+    Route::get('/group/{id}', [GroupController::class, 'show']);
     //transactional routes 
-    Route::middleware(['transactional', 'jsonConverter'])->group(
+    Route::middleware('transactional')->group(
         function () {
             //TODO put here each route that updates,deletes,inserts anything
-            Route::put('/files/{file}/check-in', [FileController::class, 'checkin'])->middleware('can:checkIn,file');
-            Route::put('/files/bulk-check-in', [FileController::class, 'bulkCheckIn']); //->middleware('can:bulkCheckIn');
-            Route::put('/files/{file}/check-out', [FileController::class, 'checkout']);
-            Route::put('/files/{file}/edit-file', [FileController::class, 'editFile'])->middleware('can:edit,file');
-            //
+            Route::post('/file', [FileController::class, 'store']);
+            Route::delete('/file/{id}', [FileController::class, 'destroy']);
+            Route::post('/group', [GroupController::class, 'store']);
+            Route::delete('/group/{id}', [GroupController::class, 'destroy']);
+            Route::post('/group/{id}/add-users', [GroupController::class, 'addUsers']);
+            Route::post('/group/{id}/add-files', [GroupController::class, 'addFiles']);
+            Route::delete('/group/{groupId}/user/{userId}', [GroupController::class, 'deleteUser']);
+            Route::delete('/group/{groupId}/file/{fileId}', [GroupController::class, 'deleteFile']);
+
+            // file operations
+            Route::middleware('jsonConverter')->group(
+                function () {
+                    Route::put('/files/{file}/check-in', [FileController::class, 'checkin'])->middleware('can:checkIn,file');
+                    Route::put('/files/bulk-check-in', [FileController::class, 'bulkCheckIn']); //->middleware('can:bulkCheckIn');
+                    Route::put('/files/{file}/check-out', [FileController::class, 'checkout']);
+                    Route::put('/files/{file}/edit-file', [FileController::class, 'editFile'])->middleware('can:edit,file');
+                }
+            );
         }
     );
-
 });

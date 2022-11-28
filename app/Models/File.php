@@ -7,8 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class File extends Model
 {
-    protected $fillable = ['owner_id', 'reserver_id', 'path', 'name'];
+
     use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'owner_id',
+        'path',
+        'created_at',
+        'reserver_id',
+    ];
+
+    protected $hidden = [
+        'pivot',
+    ];
+
+
     /**
      * relations
      */
@@ -39,5 +58,6 @@ class File extends Model
     {
         return $this->status == 'checkedIn' && $this->reserver_id != null;
     }
+
 
 }
