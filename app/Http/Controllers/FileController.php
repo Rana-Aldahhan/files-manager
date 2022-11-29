@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use auth;
-use Carbon\Carbon;
+use App\Interfaces\FileRepositoryInterface;
 use App\Models\File;
-use App\Models\User;
 use Illuminate\Http\Request;
-
-use function Ramsey\Uuid\Lazy\toString;
 use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
 {
+    private $fileRepository;
+
+    public function __construct(FileRepositoryInterface $fileRepository)
+    {
+        $this->fileRepository=$fileRepository;
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -30,7 +32,7 @@ class FileController extends Controller
         $time = now();
         $timestamp = str_replace([' ', ':'], '-', $time);
 
-        $file = File::create([
+        $file = $this->fileRepository->create([
             'owner_id' => auth()->user()->id,
             'name' => $request->name,
             'created_at' => $time,

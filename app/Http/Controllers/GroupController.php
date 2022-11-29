@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Interfaces\GroupRepositoryInterface;
 use App\Models\File;
 use App\Models\Group;
 use App\Models\User;
@@ -9,6 +10,12 @@ use Illuminate\Http\Request;
 
 class GroupController extends Controller
 {
+    private $groupRepository;
+
+    public function __construct(GroupRepositoryInterface $groupRepository)
+    {
+        $this->groupRepository=$groupRepository;
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -22,7 +29,7 @@ class GroupController extends Controller
             'name' => 'required',
         ]);
 
-        $group = Group::create([
+        $group = $this->groupRepository->create([
             'user_id' => auth()->user()->id,
             'name' => $request->name,
         ]);
@@ -107,7 +114,7 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
-        Group::destroy($group->id);
+        $this->groupRepository->delete($group->id);
 
         return  response()->json([
             'data' => [],

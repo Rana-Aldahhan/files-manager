@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Interfaces\UserRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -10,6 +10,13 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    private $userRepository;
+
+    public function __construct(UserRepositoryInterface $userRepository)
+    {
+        $this->userRepository=$userRepository;
+    }
+
     public function register(Request $request)
     {
         //TODO should validations be in a middleware?
@@ -24,7 +31,7 @@ class AuthController extends Controller
                 $validator->errors()->first()
             ]);
         }
-        $user=User::create([
+        $user=$this->userRepository->create([
             'name'=>$request->name,
             'email'=>$request->email,
             'password'=>Hash::make($request->password)
@@ -40,7 +47,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
      
-        $user = User::where('email', $request->email)->first();
+        $user = $this->userRepository->findByEmail($request->email);
      
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
