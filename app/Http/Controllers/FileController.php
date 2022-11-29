@@ -46,17 +46,27 @@ class FileController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  File  $file
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(File $file)
     {
-        $file = File::find($id);
-
-        $file->destroy($id);
+        $file->destroy($file->id);
         Storage::disk('public')->delete("files/" . $file->path);
         return  response()->json([
             'data' => [],
         ], 200);
     }
+
+    /**
+     * show the specified resource 
+     *
+     * @param  File $file
+     * @return \Illuminate\Http\Response
+     */
+    public function show(File $file)
+    {
+        return response()->file(storage_path('app\public\files\\' . $file->path));
+    }
+
 }

@@ -51,7 +51,7 @@ class FilePolicy
      *
      * @param  \App\Models\User  $user
      * @return bool
-     * use it in routes like: ->middlware('can:bluckCheckIn,App\Policies\FilePolicy')
+     * use it in routes like: ->middlware('can:bluckCheckIn,App\Models\File')
      */
     public function bulkCheckIn(User $user)
     {
@@ -84,7 +84,11 @@ class FilePolicy
 
     public function edit(User $user, File $file)
     {
-        return $file->reserver_id == auth()->id();
+        return $file->reserver_id == $user->id;
+    }
+    public function checkOut(User $user, File $file)
+    {
+        return $file->reserver_id == $user->id;
     }
 
 }

@@ -77,7 +77,7 @@ class GroupPolicy
     public function addFilesToGroup(User $user, Group $group)
     {
         $userIsOwnerofAllFile=true;
-        collect(request()->ids)//get files ids from request
+        collect(request()->filesIds)//get files ids from request
         ->map(function($id)use(&$userIsOwnerofAllFile,$user)//map over them to check each file
         {
             $file=File::find($id);
@@ -92,6 +92,7 @@ class GroupPolicy
      *
      * @param  \App\Models\User  $user
      * @param  \App\Models\Group $group
+     * @param  \App\Models\File $file
      * @return bool
      * use it in routes like: ->middlware('can:removeFileFromGroup,group,file') and use model binding 
      */

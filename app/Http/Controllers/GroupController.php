@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\File;
 use App\Models\Group;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class GroupController extends Controller
@@ -15,7 +17,7 @@ class GroupController extends Controller
      */
     public function store(Request $request)
     {
-
+        //TODO add current user to members
         $request->validate([
             'name' => 'required',
         ]);
@@ -24,13 +26,12 @@ class GroupController extends Controller
             'user_id' => auth()->user()->id,
             'name' => $request->name,
         ]);
-
-        foreach ($request->users as $user) {
-            $group->members()->attach($user);
-        }
-        foreach ($request->filesIds as $fileId) {
+        collect($request->users)->map(function($member)use ($group){
+            $group->members()->attach($member);
+        });
+        collect($request->fileIds)->map(function($fileId)use ($group){
             $group->files()->attach($fileId);
-        }
+        });
         return response()->json([
             'data' => [],
         ], 201);
@@ -43,9 +44,8 @@ class GroupController extends Controller
     }
 
 
-    public function addUsers(Request $request, $id)
+    public function addUsers(Request $request, Group $group)
     {
-        $group = Group::findOrFail($id);
         foreach ($request->users as $user) {
             $group->members()->attach($user);
         }
@@ -54,9 +54,9 @@ class GroupController extends Controller
         ], 201);
     }
 
-    public function deleteUser($groupId, $userId)
+    public function deleteUser(Group $group, User $member)
     {
-        Group::findOrFail($groupId)->members()->detach($userId);
+        $group->members()->detach($member->id);
 
 
         return response()->json([
@@ -64,9 +64,9 @@ class GroupController extends Controller
         ], 200);
     }
 
-    public function deleteFile($groupId, $fileId)
+    public function deleteFile(Group $group, File $file)
     {
-        Group::findOrFail($groupId)->files()->detach($fileId);
+        $group->files()->detach($file->id);
 
 
         return response()->json([
@@ -74,9 +74,9 @@ class GroupController extends Controller
         ], 200);
     }
 
-    public function addFiles(Request $request, $id)
+    public function addFiles(Request $request, Group $group)
     {
-        $group = Group::findOrFail($id);
+        //TODO make it a map
         foreach ($request->filesIds as $fileId) {
             $group->files()->attach($fileId);
         }
@@ -85,9 +85,9 @@ class GroupController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    public function show(Group $group)
     {
-        $group = Group::with(['members', 'files'])->findOrFail($id);
+        // $group = Group::with(['members', 'files'])->findOrFail($id);
         $group->members->transform(function ($member) {
             $member->setVisible(['id', 'name']);
             return $member;
@@ -102,12 +102,12 @@ class GroupController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  Group  $group
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Group $group)
     {
-        Group::destroy($id);
+        Group::destroy($group->id);
 
         return  response()->json([
             'data' => [],

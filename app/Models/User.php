@@ -88,7 +88,7 @@ class User extends Authenticatable
     }
     public function isGroupOwner(Group $group)
     {
-        return $this->id == $group->owner_id;
+        return $this->id == $group->user_id;
     }
     public function isFileOwner(File $file)
     {

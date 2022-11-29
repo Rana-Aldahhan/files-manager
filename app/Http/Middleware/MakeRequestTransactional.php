@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -22,13 +23,15 @@ class MakeRequestTransactional
 
         try {
             $response = $next($request);
-        } catch (\Exception $e) {
+        }catch(\Throwable $e){
             DB::rollBack();
             throw $e;
         }
-        if ($response instanceof Response && $response->getStatusCode() > 399) {
+        if (( $response instanceof Response || $response instanceof JsonResponse)
+          && $response->getStatusCode() > 399) {
             DB::rollBack();
-        } else {
+        } 
+        else {
             DB::commit();
         }
 
