@@ -18,28 +18,31 @@ use App\Http\Controllers\GroupController;
 |
 */
 
+
+
 //unauthenticated routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 //authenticated routes
 Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/files/checked-in', [FileController::class, 'getCheckedInFiles']);
     Route::get( '/files/{file}',[FileController::class, 'show'])->middleware('can:view,file');
     Route::get( '/user', function (Request $request) {  return $request->user();});
 
     Route::get('/owned-groups', [GroupController::class, 'ownedGroups']);
-    Route::get('/group/{group}', [GroupController::class, 'show']);
+    Route::get('/groups/{group}', [GroupController::class, 'show']);
     //transactional routes 
     Route::middleware('transactional')->group(
         function () {
             //TODO put here each route that updates,deletes,inserts anything
             Route::post('/file', [FileController::class, 'store']);
-            Route::delete('/file/{file}', [FileController::class, 'destroy'])->middleware('can:delete,file');
+            Route::delete('/files/{file}', [FileController::class, 'destroy'])->middleware('can:delete,file');
             Route::post('/group', [GroupController::class, 'store']);
-            Route::delete('/group/{group}', [GroupController::class, 'destroy'])->middleware('can:delete,group');
-            Route::post('/group/{group}/add-users', [GroupController::class, 'addUsers'])->middleware('can:addMembers,group');
-            Route::post('/group/{group}/add-files', [GroupController::class, 'addFiles'])->middleware('can:addFilesToGroup,group');
-            Route::delete('/group/{group}/user/{member}', [GroupController::class, 'deleteUser'])->middleware('can:removeMember,group,member');
-            Route::delete('/group/{group}/file/{file}', [GroupController::class, 'deleteFile'])->middleware('can:removeFileFromGroup,group,file');
+            Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->middleware('can:delete,group');
+            Route::post('/groups/{group}/add-users', [GroupController::class, 'addUsers'])->middleware('can:addMembers,group');
+            Route::post('/groups/{group}/add-files', [GroupController::class, 'addFiles'])->middleware('can:addFilesToGroup,group');
+            Route::delete('/groups/{group}/users/{member}', [GroupController::class, 'deleteUser'])->middleware('can:removeMember,group,member');
+            Route::delete('/groups/{group}/files/{file}', [GroupController::class, 'deleteFile'])->middleware('can:removeFileFromGroup,group,file');
 
             // file operations
             Route::middleware('jsonConverter')->group(

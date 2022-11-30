@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Interfaces\GroupRepositoryInterface;
 use App\Models\File;
-use App\Models\Group;
 use App\Models\User;
+use App\Models\Group;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Interfaces\GroupRepositoryInterface;
 
 class GroupController extends Controller
 {
@@ -14,7 +15,7 @@ class GroupController extends Controller
 
     public function __construct(GroupRepositoryInterface $groupRepository)
     {
-        $this->groupRepository=$groupRepository;
+        $this->groupRepository = $groupRepository;
     }
     /**
      * Store a newly created resource in storage.
@@ -24,24 +25,26 @@ class GroupController extends Controller
      */
     public function store(Request $request)
     {
-        //TODO add current user to members
-        $request->validate([
+        $validator =  Validator::make($request->only('name','users','fileIds'),[
             'name' => 'required',
+            'users' => 'present|array',
+            'fileIds' => 'present|array'
         ]);
-
+        if ($validator->fails()) { 
+           return $this->errorResponse($validator->errors()->first(), 422);
+        }
         $group = $this->groupRepository->create([
             'user_id' => auth()->user()->id,
             'name' => $request->name,
         ]);
-        collect($request->users)->map(function($member)use ($group){
+        $group->members()->attach(auth()->user()->id);
+        collect($request->users)->map(function ($member) use ($group) {
             $group->members()->attach($member);
         });
-        collect($request->fileIds)->map(function($fileId)use ($group){
+        collect($request->fileIds)->map(function ($fileId) use ($group) {
             $group->files()->attach($fileId);
         });
-        return response()->json([
-            'data' => [],
-        ], 201);
+        return $this->successResponse([]);
     }
 
 
@@ -53,48 +56,46 @@ class GroupController extends Controller
 
     public function addUsers(Request $request, Group $group)
     {
-        foreach ($request->users as $user) {
-            $group->members()->attach($user);
+        $validator =  Validator::make($request->only('users'),[
+            'users' => 'present|array'
+        ]);
+        if ($validator->fails()) { 
+           return $this->errorResponse($validator->errors()->first(), 422);
         }
-        return response()->json([
-            'data' => [],
-        ], 201);
+        collect($request->users)->map(function ($user) use ($group) {
+            $group->members()->attach($user);
+        });
+        return $this->successResponse([]);
     }
 
     public function deleteUser(Group $group, User $member)
     {
         $group->members()->detach($member->id);
-
-
-        return response()->json([
-            'data' => [],
-        ], 200);
+        return $this->successResponse([]);
     }
 
     public function deleteFile(Group $group, File $file)
     {
         $group->files()->detach($file->id);
-
-
-        return response()->json([
-            'data' => [],
-        ], 200);
+        return $this->successResponse([]);
     }
 
     public function addFiles(Request $request, Group $group)
     {
-        //TODO make it a map
-        foreach ($request->filesIds as $fileId) {
-            $group->files()->attach($fileId);
+        $validator =  Validator::make($request->only('filesIds'),[
+            'filesIds' => 'present|array'
+        ]);
+        if ($validator->fails()) { 
+           return $this->errorResponse($validator->errors()->first(), 422);
         }
-        return response()->json([
-            'data' => [],
-        ], 201);
+        collect($request->filesIds)->map(function ($fileId) use ($group) {
+            $group->files()->attach($fileId);
+        });
+        return $this->successResponse([]);
     }
 
     public function show(Group $group)
     {
-        // $group = Group::with(['members', 'files'])->findOrFail($id);
         $group->members->transform(function ($member) {
             $member->setVisible(['id', 'name']);
             return $member;
@@ -115,9 +116,6 @@ class GroupController extends Controller
     public function destroy(Group $group)
     {
         $this->groupRepository->delete($group->id);
-
-        return  response()->json([
-            'data' => [],
-        ], 200);
+        return $this->successResponse([]);
     }
 }

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Interfaces\FileRepositoryInterface;
 use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use App\Interfaces\FileRepositoryInterface;
 
 class FileController extends Controller
 {
@@ -13,7 +14,7 @@ class FileController extends Controller
 
     public function __construct(FileRepositoryInterface $fileRepository)
     {
-        $this->fileRepository=$fileRepository;
+        $this->fileRepository = $fileRepository;
     }
     /**
      * Store a newly created resource in storage.
@@ -23,11 +24,13 @@ class FileController extends Controller
      */
     public function store(Request $request)
     {
-
-        $request->validate([
+        $validator =  Validator::make($request->only('name', 'file'), [
             'name' => 'required',
             'file' => 'required',
         ]);
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), 422);
+        }
 
         $time = now();
         $timestamp = str_replace([' ', ':'], '-', $time);
@@ -40,9 +43,7 @@ class FileController extends Controller
         ]);
 
         $request->file('file')->storeAs('files', $file->path, 'public');
-        return response()->json([
-            'data' => $file,
-        ], 201);
+        return $this->successResponse($file);
     }
 
     /**
@@ -55,9 +56,12 @@ class FileController extends Controller
     {
         $file->destroy($file->id);
         Storage::disk('public')->delete("files/" . $file->path);
-        return  response()->json([
-            'data' => [],
-        ], 200);
+        return $this->successResponse([]);
+    }
+
+    public function getCheckedInFiles()
+    {
+        return $this->successResponse(auth()->user()->reservedFiles()->get(['id','name','path','status']));
     }
 
     /**
@@ -70,5 +74,4 @@ class FileController extends Controller
     {
         return response()->file(storage_path('app\public\files\\' . $file->path));
     }
-
 }
