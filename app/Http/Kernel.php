@@ -65,6 +65,7 @@ class Kernel extends HttpKernel
         'transactional' => \App\Http\Middleware\MakeRequestTransactional::class,
         'readability' => \App\Http\Middleware\FileMiddleware\EnsureAbilityToReadFile::class,
         'jsonConverter' => \App\Http\Middleware\JsonResponseConverter::class,
+        'admin'=>\App\Http\Middleware\VerifyAdminRole::class,
     ];
 
 
