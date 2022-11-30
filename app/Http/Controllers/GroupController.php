@@ -8,6 +8,7 @@ use App\Models\Group;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Interfaces\GroupRepositoryInterface;
+use Illuminate\Support\Facades\Cache;
 
 class GroupController extends Controller
 {
@@ -96,15 +97,24 @@ class GroupController extends Controller
 
     public function show(Group $group)
     {
-        $group->members->transform(function ($member) {
-            $member->setVisible(['id', 'name']);
-            return $member;
+        // $group = Group::with(['members', 'files'])->findOrFail($id);
+        ray()->showQueries();
+        $cachedGroup = Cache::rememberForever($group->id, function () use ($group) {
+            $group->members->transform(
+                function ($member) {
+                    $member->setVisible(['id', 'name']);
+                    return $member;
+                }
+            );
+            $group->files->transform(
+                function ($file) {
+                    $file->setVisible(['id', 'name', 'path', 'status']);
+                    return $file;
+                }
+            );
+            return $group;
         });
-        $group->files->transform(function ($file) {
-            $file->setVisible(['id', 'name', 'path', 'status']);
-            return $file;
-        });
-        return $group;
+        return $cachedGroup;
     }
 
     /**
