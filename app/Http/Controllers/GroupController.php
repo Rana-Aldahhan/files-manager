@@ -7,6 +7,7 @@ use App\Models\File;
 use App\Models\Group;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class GroupController extends Controller
 {
@@ -14,7 +15,7 @@ class GroupController extends Controller
 
     public function __construct(GroupRepositoryInterface $groupRepository)
     {
-        $this->groupRepository=$groupRepository;
+        $this->groupRepository = $groupRepository;
     }
     /**
      * Store a newly created resource in storage.
@@ -33,10 +34,10 @@ class GroupController extends Controller
             'user_id' => auth()->user()->id,
             'name' => $request->name,
         ]);
-        collect($request->users)->map(function($member)use ($group){
+        collect($request->users)->map(function ($member) use ($group) {
             $group->members()->attach($member);
         });
-        collect($request->fileIds)->map(function($fileId)use ($group){
+        collect($request->fileIds)->map(function ($fileId) use ($group) {
             $group->files()->attach($fileId);
         });
         return response()->json([
@@ -95,15 +96,23 @@ class GroupController extends Controller
     public function show(Group $group)
     {
         // $group = Group::with(['members', 'files'])->findOrFail($id);
-        $group->members->transform(function ($member) {
-            $member->setVisible(['id', 'name']);
-            return $member;
+        ray()->showQueries();
+        $cachedGroup = Cache::rememberForever($group->id, function () use ($group) {
+            $group->members->transform(
+                function ($member) {
+                    $member->setVisible(['id', 'name']);
+                    return $member;
+                }
+            );
+            $group->files->transform(
+                function ($file) {
+                    $file->setVisible(['id', 'name', 'path', 'status']);
+                    return $file;
+                }
+            );
+            return $group;
         });
-        $group->files->transform(function ($file) {
-            $file->setVisible(['id', 'name', 'path', 'status']);
-            return $file;
-        });
-        return $group;
+        return $cachedGroup;
     }
 
     /**
@@ -116,7 +125,7 @@ class GroupController extends Controller
     {
         $this->groupRepository->delete($group->id);
 
-        return  response()->json([
+        return response()->json([
             'data' => [],
         ], 200);
     }
