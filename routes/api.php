@@ -18,11 +18,14 @@ use App\Http\Controllers\GroupController;
 |
 */
 
+
+
 //unauthenticated routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 //authenticated routes
 Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/files/checked-in', [FileController::class, 'getCheckedInFiles']);
     Route::get('/files/{file}', [FileController::class, 'show'])->middleware('can:view,file');
     Route::get(
         '/user',
@@ -32,7 +35,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     );
 
     Route::get('/owned-groups', [GroupController::class, 'ownedGroups']);
-    Route::get('/group/{group}', [GroupController::class, 'show']);
+    Route::get('/groups/{group}', [GroupController::class, 'show']);
     //transactional routes 
     Route::middleware('transactional')->group(
         function () {
@@ -50,8 +53,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->middleware('can:delete,group');
             Route::post('/groups/{group}/add-users', [GroupController::class, 'addUsers'])->middleware('can:addMembers,group');
             Route::post('/groups/{group}/add-files', [GroupController::class, 'addFiles'])->middleware('can:addFilesToGroup,group');
-            Route::delete('/groups/{group}/user/{member}', [GroupController::class, 'deleteUser'])->middleware('can:removeMember,group,member');
-            Route::delete('/groups/{group}/file/{file}', [GroupController::class, 'deleteFile'])->middleware('can:removeFileFromGroup,group,file');
+            Route::delete('/groups/{group}/users/{member}', [GroupController::class, 'deleteUser'])->middleware('can:removeMember,group,member');
+            Route::delete('/groups/{group}/files/{file}', [GroupController::class, 'deleteFile'])->middleware('can:removeFileFromGroup,group,file');
 
         }
     );
