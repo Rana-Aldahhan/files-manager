@@ -20,6 +20,9 @@ class JsonResponseConverter
         $response = $next($request);
         if ($response->getOriginalContent() instanceof \Exception)
             return $this->errorResponse($response->getOriginalContent()->getMessage(), $response->getOriginalContent()->getCode());
-        return $this->successResponse($response->getOriginalContent());
+        // return $this->successResponse($response->getOriginalContent());
+        return response()->json([
+            'data' => $response,
+        ], 201);
     }
 }

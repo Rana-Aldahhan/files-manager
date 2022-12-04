@@ -2,15 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Traits\ApiResponser;
+use App\Interfaces\FileLogRepositoryInterface;
+use App\Interfaces\FileRepositoryInterface;
+use App\Interfaces\UserRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Models\File;
+use App\Models\FileLog;
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File as FacadeFile;
 
 class FileOperationController extends Controller
 {
-    use ApiResponser;
+    private FileLogRepositoryInterface $fileLogRepo;
+    private FileRepositoryInterface $fileRepository;
+    private UserRepositoryInterface $userRepository;
+    public function __construct(
+        FileLogRepositoryInterface $fileLogRepo,
+        FileRepositoryInterface $fileRepository,
+        UserRepositoryInterface $userRepository
+    )
+    {
+
+        $this->fileLogRepo = $fileLogRepo;
+        $this->fileRepository = $fileRepository;
+        $this->userRepository = $userRepository;
+    }
+
     private function storeFile(Request $request)
     {
         $filePath = null;
@@ -32,9 +50,11 @@ class FileOperationController extends Controller
         $file->status = 'checkedIn';
         $file->reserver_id = auth()->id();
         $file->save();
-        return $file;
-        // call actionLogging (middleware after filecheckedin)
-        // call request logging (middleware after filecheckedin)
+        //return $file;
+        return response()->json([
+            'data' => $file,
+        ], 200);
+
     }
 
     public function checkout(File $file)
@@ -42,9 +62,11 @@ class FileOperationController extends Controller
         $file->status = 'free';
         $file->reserver_id = null;
         $file->save();
-        return $file;
-        // call actionLogging (middleware after filecheckedin)
-        // call request logging (middleware after filecheckedin)
+        // return $file;
+        return response()->json([
+            'data' => $file,
+        ], 200);
+
 
     }
     public function editFile(File $file, Request $request)
@@ -57,29 +79,39 @@ class FileOperationController extends Controller
         $file->path = $fileNameToStore;
         $file->name = $request->name;
         $file->save();
-        return $file;
-        // call actionLogging (middleware after filecheckedin)
-        // call request logging (middleware after filecheckedin)
+        return response()->json([
+            'data' => $file,
+        ], 200);
+
     }
 
     public function bulkCheckIn(Request $request)
     {
-        // to check that the function is working 
-        /*  $canCheckAll = true;
-        $files = collect();
-        collect(request()->ids) //get files ids from request
-        ->map(function ($id) use (&$canCheckAll, &$files) //map over them to check each file
-        {
-        $file = File::find($id);
-        $files->push($file);
-        });
-        Cache::put('bulkCheckInFiles', $files);*/
         $bulkCheckInFiles = Cache::pull('bulkCheckInFiles');
         $bulkCheckInFiles->map(function ($file) {
-            return $this->checkin($file);
+            return $this->checkin($file)->getOriginalContent();
         });
-        return $bulkCheckInFiles;
+        return response()->json([
+            'data' => $bulkCheckInFiles,
+        ], 200);
     }
 
+    public function history(File $file)
+    {
+        $fileLog = $this->fileLogRepo->getFileLog($file->id)->map(function ($record) {
+            $fileName = $this->fileRepository->find($record->file_id)->name;
+            $userName = $this->userRepository->find($record->user_id)->name;
+            return [
+                'user_name' => $userName,
+                'user_id' => $record->user_id,
+                'file_name' => $fileName,
+                'file_id' => $record->file_id,
+                'action_date' => $record->created_at,
+            ];
+        })->values();
+        return response()->json([
+            'data' => $fileLog,
+        ], 200);
+    }
 
 }

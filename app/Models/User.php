@@ -94,4 +94,8 @@ class User extends Authenticatable
     {
         return $this->id == $file->owner_id;
     }
+    public function isAdmin()
+    {
+        return $this->id == 1;
+    }
 }

@@ -23,8 +23,13 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 //authenticated routes
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get( '/files/{file}',[FileController::class, 'show'])->middleware('can:view,file');
-    Route::get( '/user', function (Request $request) {  return $request->user();});
+    Route::get('/files/{file}', [FileController::class, 'show'])->middleware('can:view,file');
+    Route::get(
+        '/user',
+        function (Request $request) {
+            return $request->user();
+        }
+    );
 
     Route::get('/owned-groups', [GroupController::class, 'ownedGroups']);
     Route::get('/group/{group}', [GroupController::class, 'show']);
@@ -32,7 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware('transactional')->group(
         function () {
             //TODO put here each route that updates,deletes,inserts anything
-            Route::post('/file', [FileController::class, 'store']);
+            Route::post('/file', [FileController::class, 'store'])->middleware('fileTracer:upload');
             Route::delete('/file/{file}', [FileController::class, 'destroy'])->middleware('can:delete,file');
             Route::post('/group', [GroupController::class, 'store']);
             Route::delete('/group/{group}', [GroupController::class, 'destroy'])->middleware('can:delete,group');
@@ -42,12 +47,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::delete('/group/{group}/file/{file}', [GroupController::class, 'deleteFile'])->middleware('can:removeFileFromGroup,group,file');
 
             // file operations
-            Route::middleware('jsonConverter')->group(
+            Route::middleware([])->group(
                 function () {
-                    Route::put('/files/{file}/check-in', [FileOperationController::class, 'checkin'])->middleware('can:checkIn,file');
-                    Route::put('/files/bulk-check-in', [FileOperationController::class, 'bulkCheckIn'])->middleware('can:bulkCheckIn,App\Models\File');
-                    Route::put('/files/{file}/check-out', [FileOperationController::class, 'checkout'])->middleware('can:checkOut,file');
-                    Route::put('/files/{file}/edit-file', [FileOperationController::class, 'editFile'])->middleware('can:edit,file');
+                    Route::put('/files/{file}/check-in', [FileController::class, 'checkin'])->middleware(['can:checkIn,file', 'fileTracer:check-in']);
+                    Route::put('/files/bulk-check-in', [FileController::class, 'bulkCheckIn'])->middleware(['can:bulkCheckIn,App\Models\File', 'fileTracer:bulk-check-in']);
+                    Route::put('/files/{file}/check-out', [FileController::class, 'checkout'])->middleware(['can:checkOut,file', 'fileTracer:check-out']);
+                    Route::put('/files/{file}/edit-file', [FileController::class, 'editFile'])->middleware(['can:edit,file', 'fileTracer:edit']);
+                    Route::get('/files/{file}/history', [FileController::class, 'history'])->middleware(['can:showHistory,file']); //->middleware(['can:edit,file', 'fileTracer:edit']);
                 }
             );
         }

@@ -90,5 +90,9 @@ class FilePolicy
     {
         return $file->reserver_id == $user->id;
     }
+    public function showHistory(User $user, File $file)
+    {
+        return $user->isFileOwner($file) || $user->isAdmin();
+    }
 
 }

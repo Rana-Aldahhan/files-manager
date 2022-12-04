@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class FileLog extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'action',
+        'file_id',
+        'user_id',
+    ];
     /**
      * relations
      */
