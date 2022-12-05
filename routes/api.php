@@ -4,8 +4,8 @@ use App\Http\Controllers\FileOperationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,18 +28,15 @@ Route::middleware('logging')->group(function () {
         function () {
             Route::get('/files/checked-in', [FileController::class, 'getCheckedInFiles']);
             Route::get('/files/{file}', [FileController::class, 'show'])->middleware('can:view,file');
-            Route::get(
-                '/user',
-                function (Request $request) {
-                        return $request->user();
-                    }
-            );
-
+            Route::get( '/user',function (Request $request) {  return $request->user(); } );
             Route::get('/owned-groups', [GroupController::class, 'ownedGroups']);
             Route::get('/groups/{group}', [GroupController::class, 'show']);
             Route::get('/files/{file}/history', [FileController::class, 'history'])->middleware(['can:showHistory,file']);
             Route::get('/admin/files', [FileController::class, 'index'])->middleware(['admin']);
             Route::get('/admin/groups', [GroupController::class, 'index'])->middleware(['admin']);
+            Route::get('/joined-groups',[UserController::class,'getJoinedGroups'])->middleware('redirectIfAdmin');
+            Route::get('/all-users',[UserController::class,'getAllUsers']);
+            Route::get('/owned-files',[UserController::class,'getOwnedFiles']);
             //transactional routes 
             Route::middleware('transactional')->group(
                 function () {

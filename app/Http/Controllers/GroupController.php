@@ -45,7 +45,7 @@ class GroupController extends Controller
         collect($request->fileIds)->map(function ($fileId) use ($group) {
             $group->files()->attach($fileId);
         });
-        return $this->successResponse([]);
+        return $this->successResponse($group);
     }
 
 
