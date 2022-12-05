@@ -14,7 +14,7 @@ return new class extends Migration {
     {
         Schema::table('files', function (Blueprint $table) {
             // create column for version tracking
-            $table->lockVersion();
+            $table->integer('lockVersion');
         });
     }
 
