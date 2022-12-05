@@ -8,7 +8,7 @@ use App\Models\Group;
 class EloquentGroupRepository implements GroupRepositoryInterface{
 
     public function all(){
-        return Group::all();
+        return Group::with(['files.reserver','members'])->get();
     }
     public function create(array  $data){
         return Group::create($data);
@@ -20,6 +20,6 @@ class EloquentGroupRepository implements GroupRepositoryInterface{
         return Group::destroy($id);
     }
     public function find($id){
-        return Group::findOrFail($id);
+        return Group::with(['files.reserver','members'])->findOrFail($id);
     }
 }

@@ -18,7 +18,7 @@ class Group extends Model
         'name',
         'user_id',
     ];
-    protected $hidden = ['created_at', 'updated_at'];
+    protected $hidden = ['created_at', 'updated_at','pivot'];
     // protected $with = ['files:id,name', 'members:name,id'];
 
 
