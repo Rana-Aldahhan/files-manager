@@ -68,9 +68,9 @@ class FileController extends Controller
      */
     public function destroy(File $file)
     {
-        $file->destroy($file->id);
+        $lockedFile = $this->fileRepository->lockForUpdate($file->id);
+        $lockedFile->destroy($file->id);
         Storage::disk('public')->delete("files/" . $file->path);
-        $this->fileActionLogging($file, auth(), "delete");
         return response()->json([
             'data' => [],
         ], 200);
@@ -109,12 +109,14 @@ class FileController extends Controller
 
     public function checkin(File $file)
     {
-        $file->status = 'checkedIn';
-        $file->reserver_id = auth()->id();
-        $file->save();
+        // ray()->showQueries();
+        $lockedFile = $this->fileRepository->lockForUpdate($file->id);
+        $lockedFile->status = 'checkedIn';
+        $lockedFile->reserver_id = auth()->id();
+        $lockedFile->save();
         //return $file;
         return response()->json([
-            'data' => $file,
+            'data' => $lockedFile,
         ], 200);
 
     }
@@ -170,6 +172,14 @@ class FileController extends Controller
         })->values();
         return response()->json([
             'data' => $fileLog,
+        ], 200);
+    }
+
+    public function index()
+    {
+        $allFiles = $this->fileRepository->all();
+        return response()->json([
+            'data' => $allFiles,
         ], 200);
     }
 

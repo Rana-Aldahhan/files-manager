@@ -26,13 +26,13 @@ class GroupController extends Controller
      */
     public function store(Request $request)
     {
-        $validator =  Validator::make($request->only('name','users','fileIds'),[
+        $validator = Validator::make($request->only('name', 'users', 'fileIds'), [
             'name' => 'required',
             'users' => 'present|array',
             'fileIds' => 'present|array'
         ]);
-        if ($validator->fails()) { 
-           return $this->errorResponse($validator->errors()->first(), 422);
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), 422);
         }
         $group = $this->groupRepository->create([
             'user_id' => auth()->user()->id,
@@ -57,11 +57,11 @@ class GroupController extends Controller
 
     public function addUsers(Request $request, Group $group)
     {
-        $validator =  Validator::make($request->only('users'),[
+        $validator = Validator::make($request->only('users'), [
             'users' => 'present|array'
         ]);
-        if ($validator->fails()) { 
-           return $this->errorResponse($validator->errors()->first(), 422);
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), 422);
         }
         collect($request->users)->map(function ($user) use ($group) {
             $group->members()->attach($user);
@@ -83,11 +83,11 @@ class GroupController extends Controller
 
     public function addFiles(Request $request, Group $group)
     {
-        $validator =  Validator::make($request->only('filesIds'),[
+        $validator = Validator::make($request->only('filesIds'), [
             'filesIds' => 'present|array'
         ]);
-        if ($validator->fails()) { 
-           return $this->errorResponse($validator->errors()->first(), 422);
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), 422);
         }
         collect($request->filesIds)->map(function ($fileId) use ($group) {
             $group->files()->attach($fileId);
@@ -98,7 +98,6 @@ class GroupController extends Controller
     public function show(Group $group)
     {
         // $group = Group::with(['members', 'files'])->findOrFail($id);
-        ray()->showQueries();
         $cachedGroup = Cache::rememberForever($group->id, function () use ($group) {
             $group->members->transform(
                 function ($member) {
@@ -127,5 +126,13 @@ class GroupController extends Controller
     {
         $this->groupRepository->delete($group->id);
         return $this->successResponse([]);
+    }
+
+    public function index()
+    {
+        $allGroups = $this->groupRepository->all();
+        return response()->json([
+            'data' => $allGroups,
+        ], 200);
     }
 }
