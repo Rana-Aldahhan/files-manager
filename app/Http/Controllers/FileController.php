@@ -86,7 +86,7 @@ class FileController extends Controller
      * @param  File $file
      * @return \Illuminate\Http\Response
      */
-    public function show(File $file)
+    public function showFileContent(File $file)
     {
         return response()->file(storage_path('app\public\files\\' . $file->path));
     }
@@ -114,10 +114,7 @@ class FileController extends Controller
         $lockedFile->status = 'checkedIn';
         $lockedFile->reserver_id = auth()->id();
         $lockedFile->save();
-        //return $file;
-        return response()->json([
-            'data' => $lockedFile,
-        ], 200);
+        return $this->successResponse($lockedFile);
 
     }
 
@@ -126,10 +123,7 @@ class FileController extends Controller
         $file->status = 'free';
         $file->reserver_id = null;
         $file->save();
-        // return $file;
-        return response()->json([
-            'data' => $file,
-        ], 200);
+        return $this->successResponse($file);
     }
     public function editFile(File $file, Request $request)
     {
@@ -141,9 +135,7 @@ class FileController extends Controller
         $file->path = $fileNameToStore;
         $file->name = $request->name;
         $file->save();
-        return response()->json([
-            'data' => $file,
-        ], 200);
+        return $this->successResponse($file);
     }
 
     public function bulkCheckIn(Request $request)
@@ -152,35 +144,33 @@ class FileController extends Controller
         $bulkCheckInFiles->map(function ($file) {
             return $this->checkin($file)->getOriginalContent();
         });
-        return response()->json([
-            'data' => $bulkCheckInFiles,
-        ], 200);
+        return $this->successResponse($bulkCheckInFiles);
     }
 
     public function history(File $file)
     {
         $fileLog = $this->fileLogRepo->getFileLog($file->id)->map(function ($record) {
-            $fileName = $this->fileRepository->find($record->file_id)->name;
             $userName = $this->userRepository->find($record->user_id)->name;
             return [
+                'id'=>$record->id,
                 'user_name' => $userName,
                 'user_id' => $record->user_id,
-                'file_name' => $fileName,
-                'file_id' => $record->file_id,
+                'action'=>$record->action,
                 'action_date' => $record->created_at,
             ];
         })->values();
-        return response()->json([
-            'data' => $fileLog,
-        ], 200);
+        return $this->successResponse($fileLog);
     }
 
     public function index()
     {
         $allFiles = $this->fileRepository->all();
-        return response()->json([
-            'data' => $allFiles,
-        ], 200);
+        return $this->successResponse($allFiles);
+    }
+
+    public function show(File $file)
+    {
+        return $this->successResponse($file);
     }
 
 }

@@ -27,7 +27,8 @@ Route::middleware('logging')->group(function () {
     Route::middleware(['auth:sanctum'])->group(
         function () {
             Route::get('/files/checked-in', [FileController::class, 'getCheckedInFiles']);
-            Route::get('/files/{file}', [FileController::class, 'show'])->middleware('can:view,file');
+            Route::get('/files/{file}/content', [FileController::class, 'showFileContent'])->middleware('can:view,file');
+            Route::get('/files/{file}', [FileController::class, 'show']);
             Route::get( '/user',function (Request $request) {  return $request->user(); } );
             Route::get('/owned-groups', [GroupController::class, 'ownedGroups']);
             Route::get('/groups/{group}', [GroupController::class, 'show']);
