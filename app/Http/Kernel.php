@@ -67,6 +67,7 @@ class Kernel extends HttpKernel
         'jsonConverter' => \App\Http\Middleware\JsonResponseConverter::class,
         'admin' => \App\Http\Middleware\VerifyAdminRole::class,
         'fileTracer' => \App\Http\Middleware\FileTracer::class,
+        'logging' => \App\Http\Middleware\Logging::class,
     ];
 
 
@@ -89,6 +90,7 @@ class Kernel extends HttpKernel
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
         \Illuminate\Auth\Middleware\Authorize::class,
         \App\Http\Middleware\MakeRequestTransactional::class,
+        \App\Http\Middleware\LogAfterRequest::class,
         //logging middlewares goes below
 
     ];
