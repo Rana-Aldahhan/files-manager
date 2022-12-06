@@ -32,6 +32,7 @@ Route::middleware('logging')->group(function () {
             Route::get( '/user',function (Request $request) {  return $request->user(); } );
             Route::get('/owned-groups', [GroupController::class, 'ownedGroups']);
             Route::get('/groups/{group}', [GroupController::class, 'show']);
+            Route::get('/groups/{group}/members', [GroupController::class, 'getMembers']);
             Route::get('/files/{file}/history', [FileController::class, 'history'])->middleware(['can:showHistory,file']);
             Route::get('/admin/files', [FileController::class, 'index'])->middleware(['admin']);
             Route::get('/admin/groups', [GroupController::class, 'index'])->middleware(['admin']);
