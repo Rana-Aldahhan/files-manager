@@ -38,7 +38,7 @@ class AuthController extends Controller
         ]);
         $token=$user->createToken('app')->plainTextToken;
         $user->token=$token;
-        return response()->json($user,201);
+        return $this->successResponse($user,201);
     }
     public function login(Request $request)
     {
@@ -58,6 +58,6 @@ class AuthController extends Controller
         }
         $token=$user->createToken('app')->plainTextToken;
         $user->token=$token;
-        return response()->json($user);
+        return $this->successResponse($user);
     }
 }

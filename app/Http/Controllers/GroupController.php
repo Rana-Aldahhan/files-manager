@@ -113,7 +113,7 @@ class GroupController extends Controller
             );
             return $group;
         });
-        return $cachedGroup;
+       return $this->successResponse($cachedGroup);
     }
 
     /**
@@ -131,8 +131,6 @@ class GroupController extends Controller
     public function index()
     {
         $allGroups = $this->groupRepository->all();
-        return response()->json([
-            'data' => $allGroups,
-        ], 200);
+        return $this->successResponse($allGroups);
     }
 }
