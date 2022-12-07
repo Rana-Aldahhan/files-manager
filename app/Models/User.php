@@ -60,7 +60,8 @@ class User extends Authenticatable
     }
     public function joinedGroups()
     {
-        return $this->belongsToMany(Group::class);
+        return $this->belongsToMany(Group::class)->using(GroupUser::class);
+        ;
     }
     /**
      * methods

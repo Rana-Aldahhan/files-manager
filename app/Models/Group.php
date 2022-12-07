@@ -18,7 +18,7 @@ class Group extends Model
         'name',
         'user_id',
     ];
-    protected $hidden = ['created_at', 'updated_at','pivot'];
+    protected $hidden = ['created_at', 'updated_at', 'pivot'];
     // protected $with = ['files:id,name', 'members:name,id'];
 
 
@@ -32,11 +32,11 @@ class Group extends Model
     }
     public function members()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class)->using(GroupUser::class);
     }
     public function files()
     {
-        return $this->belongsToMany(File::class);
+        return $this->belongsToMany(File::class)->using(GroupFile::class);
     }
     /**
      * methods

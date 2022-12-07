@@ -57,7 +57,6 @@ class GroupController extends Controller
 
     public function addUsers(Request $request, Group $group)
     {
-        Cache::forget($group->id);
         $validator = Validator::make($request->only('users'), [
             'users' => 'present|array'
         ]);
@@ -72,21 +71,18 @@ class GroupController extends Controller
 
     public function deleteUser(Group $group, User $member)
     {
-        Cache::forget($group->id);
         $group->members()->detach($member->id);
         return $this->successResponse([]);
     }
 
     public function deleteFile(Group $group, File $file)
     {
-        Cache::forget($group->id);
         $group->files()->detach($file->id);
         return $this->successResponse([]);
     }
 
     public function addFiles(Request $request, Group $group)
     {
-        Cache::forget($group->id);
         $validator = Validator::make($request->only('filesIds'), [
             'filesIds' => 'present|array'
         ]);
@@ -128,7 +124,6 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
-        Cache::forget($group->id);
         $this->groupRepository->delete($group->id);
         return $this->successResponse([]);
     }
