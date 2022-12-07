@@ -57,6 +57,7 @@ class GroupController extends Controller
 
     public function addUsers(Request $request, Group $group)
     {
+        Cache::forget($group->id);
         $validator = Validator::make($request->only('users'), [
             'users' => 'present|array'
         ]);
@@ -64,25 +65,28 @@ class GroupController extends Controller
             return $this->errorResponse($validator->errors()->first(), 422);
         }
         collect($request->users)->map(function ($user) use ($group) {
-             $group->members()->syncWithoutDetaching($user);
+            $group->members()->syncWithoutDetaching($user);
         });
         return $this->successResponse($group->members()->get());
     }
 
     public function deleteUser(Group $group, User $member)
     {
+        Cache::forget($group->id);
         $group->members()->detach($member->id);
         return $this->successResponse([]);
     }
 
     public function deleteFile(Group $group, File $file)
     {
+        Cache::forget($group->id);
         $group->files()->detach($file->id);
         return $this->successResponse([]);
     }
 
     public function addFiles(Request $request, Group $group)
     {
+        Cache::forget($group->id);
         $validator = Validator::make($request->only('filesIds'), [
             'filesIds' => 'present|array'
         ]);
@@ -113,7 +117,7 @@ class GroupController extends Controller
             );
             return $group;
         });
-       return $this->successResponse($cachedGroup);
+        return $this->successResponse($cachedGroup);
     }
 
     /**
@@ -124,6 +128,7 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
+        Cache::forget($group->id);
         $this->groupRepository->delete($group->id);
         return $this->successResponse([]);
     }
@@ -134,7 +139,8 @@ class GroupController extends Controller
         return $this->successResponse($allGroups);
     }
 
-    public function getMembers(Group $group){
+    public function getMembers(Group $group)
+    {
         return $this->successResponse($group->members()->get());
     }
 }
