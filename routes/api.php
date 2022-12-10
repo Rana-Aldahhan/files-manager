@@ -46,7 +46,7 @@ Route::middleware('logging')->group(function () {
                     //file operations
                     Route::post('/file', [FileController::class, 'store'])->middleware('fileTracer:upload');
                     Route::delete('/files/{file}', [FileController::class, 'destroy'])->middleware('can:delete,file');
-                    Route::put('/files/{file}/check-in', [FileController::class, 'checkin'])->middleware(['can:checkIn,file' /*, 'fileTracer:check-in'*/]);
+                    Route::put('/files/{file}/check-in', [FileController::class, 'checkin'])->middleware(['can:checkIn,file' , 'fileTracer:check-in']);
                     Route::put('/files/bulk-check-in', [FileController::class, 'bulkCheckIn'])->middleware(['can:bulkCheckIn,App\Models\File', 'fileTracer:bulk-check-in']);
                     Route::put('/files/{file}/check-out', [FileController::class, 'checkout'])->middleware(['can:checkOut,file', 'fileTracer:check-out']);
                     Route::put('/files/{file}/edit-file', [FileController::class, 'editFile'])->middleware(['can:edit,file', 'fileTracer:edit']);

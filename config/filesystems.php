@@ -29,7 +29,11 @@ return [
     */
 
     'disks' => [
-
+        'shared'=>[
+            'driver' => 'local',
+            'root' => dirname(base_path()).'/shared_storage/app',
+            'throw' => false,
+        ],
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
