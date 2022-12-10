@@ -6,7 +6,7 @@ use App\Traits\ApiResponser;
 use Closure;
 use Illuminate\Http\Request;
 
-class JsonResponseConverter
+class HealthCheckJsonResultsAdapter
 {
     use ApiResponser;
     /**
@@ -18,11 +18,10 @@ class JsonResponseConverter
     public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
-        if ($response->getOriginalContent() instanceof \Exception)
-            return $this->errorResponse($response->getOriginalContent()->getMessage(), $response->getOriginalContent()->getCode());
-        // return $this->successResponse($response->getOriginalContent());
+        $results = json_decode($response->getContent(), true);
+        $checkResults = collect($results['checkResults'])->values();
         return response()->json([
-            'data' => $response,
-        ], 201);
+            'data' => $checkResults,
+        ], 200);
     }
 }

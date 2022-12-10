@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FileOperationController;
 use Illuminate\Http\Request;
@@ -6,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\UserController;
+use Spatie\Health\Http\Controllers\HealthCheckResultsController;
+use Spatie\Health\Http\Controllers\HealthCheckJsonResultsController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +23,9 @@ use App\Http\Controllers\UserController;
 */
 
 
+//TODO: maybe it is a security issue to log admin requests
+
+
 Route::middleware('logging')->group(function () {
     //unauthenticated routes
     Route::post('/register', [AuthController::class, 'register']);
@@ -29,16 +36,23 @@ Route::middleware('logging')->group(function () {
             Route::get('/files/checked-in', [FileController::class, 'getCheckedInFiles']);
             Route::get('/files/{file}/content', [FileController::class, 'showFileContent'])->middleware('can:view,file');
             Route::get('/files/{file}', [FileController::class, 'show']);
-            Route::get( '/user',function (Request $request) {  return $request->user(); } );
+            Route::get('/user', function (Request $request) {
+                return $request->user();
+            });
             Route::get('/owned-groups', [GroupController::class, 'ownedGroups']);
             Route::get('/groups/{group}', [GroupController::class, 'show']);
             Route::get('/groups/{group}/members', [GroupController::class, 'getMembers']);
             Route::get('/files/{file}/history', [FileController::class, 'history'])->middleware(['can:showHistory,file']);
-            Route::get('/admin/files', [FileController::class, 'index'])->middleware(['admin']);
-            Route::get('/admin/groups', [GroupController::class, 'index'])->middleware(['admin']);
-            Route::get('/joined-groups',[UserController::class,'getJoinedGroups'])->middleware('redirectIfAdmin');
-            Route::get('/all-users',[UserController::class,'getAllUsers']);
-            Route::get('/owned-files',[UserController::class,'getOwnedFiles']);
+            Route::get('/joined-groups', [UserController::class, 'getJoinedGroups'])->middleware('redirectIfAdmin');
+            Route::get('/all-users', [UserController::class, 'getAllUsers']);
+            Route::get('/owned-files', [UserController::class, 'getOwnedFiles']);
+            Route::middleware('admin')->group(
+                function () {
+                    Route::get('/admin/files', [FileController::class, 'index'])->middleware(['admin']);
+                    Route::get('/admin/groups', [GroupController::class, 'index'])->middleware(['admin']);
+                    Route::get('/health', HealthCheckJsonResultsController::class)->middleware(['healthjsonConverter']);
+                }
+            );
             //transactional routes 
             Route::middleware('transactional')->group(
                 function () {
@@ -57,10 +71,8 @@ Route::middleware('logging')->group(function () {
                     Route::post('/groups/{group}/add-files', [GroupController::class, 'addFiles'])->middleware('can:addFilesToGroup,group');
                     Route::delete('/groups/{group}/users/{member}', [GroupController::class, 'deleteUser'])->middleware('can:removeMember,group,member');
                     Route::delete('/groups/{group}/files/{file}', [GroupController::class, 'deleteFile'])->middleware('can:removeFileFromGroup,group,file');
-
                 }
             );
-
         }
     );
 });
