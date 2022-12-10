@@ -82,7 +82,7 @@ class User extends Authenticatable
     }
     public function hasReservedFile(File $file)
     {
-        return $file->resever_id == $this->id;
+        return $file->reserver_id == $this->id;
     }
     public function isMemberOfGroup(Group $group)
     {
