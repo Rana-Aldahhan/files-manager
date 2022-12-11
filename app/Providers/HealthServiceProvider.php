@@ -52,7 +52,7 @@ class HealthServiceProvider extends ServiceProvider
         $OSInedpendChecks = [
             DatabaseCheck::new(),
             CacheCheck::new(),
-            EnvironmentCheck::new(),
+            EnvironmentCheck::new()->expectEnvironment('local'),
             DebugModeCheck::new(),
             DatabaseConnectionCountCheck::new()->failWhenMoreConnectionsThan(100),
             DatabaseTableSizeCheck::new()->table('files', maxSizeInMb: 2_000)->table('request_logs', maxSizeInMb: 2_00),
