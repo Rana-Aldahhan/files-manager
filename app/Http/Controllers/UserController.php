@@ -21,11 +21,12 @@ class UserController extends Controller
     {
         $groups=auth()->user()->joinedGroups()->with(['files.reserver','members'])->get();
         $groups->push($this->groupRepo->find(1));
+        $groups=$groups->sortBy('id')->values();
         return $this->successResponse($groups);
     }
     public function getOwnedFiles()
     {
-        $files=auth()->user()->ownedFiles()->get();
+        $files=auth()->user()->ownedFiles()->with(['reserver'])->get();
         return $this->successResponse($files);
     }
     public function getAllUsers(){

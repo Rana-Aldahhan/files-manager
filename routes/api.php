@@ -71,6 +71,7 @@ Route::middleware('logging')->group(function () {
                     Route::post('/groups/{group}/add-files', [GroupController::class, 'addFiles'])->middleware('can:addFilesToGroup,group');
                     Route::delete('/groups/{group}/users/{member}', [GroupController::class, 'deleteUser'])->middleware('can:removeMember,group,member');
                     Route::delete('/groups/{group}/files/{file}', [GroupController::class, 'deleteFile'])->middleware('can:removeFileFromGroup,group,file');
+                    Route::delete('/logout',[AuthController::class,'logout']);
                 }
             );
         }
