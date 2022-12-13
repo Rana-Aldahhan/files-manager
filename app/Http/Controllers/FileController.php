@@ -9,10 +9,7 @@ use App\Interfaces\FileLogRepositoryInterface;
 use App\Interfaces\UserRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Models\File;
-use App\Models\FileLog;
-use App\Models\User;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\File as FacadeFile;
 
 class FileController extends Controller
 {
@@ -56,7 +53,7 @@ class FileController extends Controller
             'created_at' => $time,
             'path' => $timestamp . '-' . $request->name . '.' . $request->file('file')->getClientOriginalExtension(),
         ]);
-        $request->file('file')->storeAs('files', $file->path, 'public');
+        $request->file('file')->storeAs('files', $file->path);
         return $this->successResponse($file);
     }
 
@@ -70,7 +67,7 @@ class FileController extends Controller
     {
         $lockedFile = $this->fileRepository->lockForUpdate($file->id);
         $lockedFile->destroy($file->id);
-        Storage::disk('public')->delete("files/" . $file->path);
+        Storage::disk()->delete("files/" . $file->path);
         return response()->json([
             'data' => [],
         ], 200);
@@ -88,7 +85,7 @@ class FileController extends Controller
      */
     public function showFileContent(File $file)
     {
-        return response()->file(storage_path('app\public\files\\' . $file->path));
+        return response()->file(Storage::disk()->path('files\\') . $file->path);
     }
 
     private function storeFile(Request $request)
@@ -102,7 +99,7 @@ class FileController extends Controller
             $timestamp = str_replace([' ', ':'], '-', $time);
             // Upload file
             $filePath = $timestamp . '-' . $request->name . '.' . $extension;
-            $request->file('file')->storeAs('files', $filePath, 'public');
+            $request->file('file')->storeAs('files', $filePath);
         }
         return $filePath;
     }
@@ -125,16 +122,16 @@ class FileController extends Controller
         $file->save();
         return $this->successResponse($file);
     }
-    public function editFile(File $file, Request $request)
+    public function editFile(Request $request,File $file)
     {
         // delete the old file
-        $myFile = storage_path('app\public\files\\' . $file->path);
-        FacadeFile::delete($myFile);
+        Storage::disk()->delete("files/" . $file->path);
         // upload another file 
         $fileNameToStore = $this->storeFile($request);
         $file->path = $fileNameToStore;
         $file->name = $request->name;
         $file->save();
+       
         return $this->successResponse($file);
     }
 

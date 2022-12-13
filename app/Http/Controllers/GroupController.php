@@ -64,9 +64,9 @@ class GroupController extends Controller
             return $this->errorResponse($validator->errors()->first(), 422);
         }
         collect($request->users)->map(function ($user) use ($group) {
-            $group->members()->attach($user);
+            $group->members()->syncWithoutDetaching($user);
         });
-        return $this->successResponse([]);
+        return $this->successResponse($group->members()->get());
     }
 
     public function deleteUser(Group $group, User $member)
@@ -90,9 +90,9 @@ class GroupController extends Controller
             return $this->errorResponse($validator->errors()->first(), 422);
         }
         collect($request->filesIds)->map(function ($fileId) use ($group) {
-            $group->files()->attach($fileId);
+            $group->files()->syncWithoutDetaching($fileId);
         });
-        return $this->successResponse([]);
+        return $this->successResponse($group->files()->get());
     }
 
     public function show(Group $group)
@@ -113,7 +113,7 @@ class GroupController extends Controller
             );
             return $group;
         });
-       return $this->successResponse($cachedGroup);
+        return $this->successResponse($cachedGroup);
     }
 
     /**
@@ -132,5 +132,10 @@ class GroupController extends Controller
     {
         $allGroups = $this->groupRepository->all();
         return $this->successResponse($allGroups);
+    }
+
+    public function getMembers(Group $group)
+    {
+        return $this->successResponse($group->members()->get());
     }
 }

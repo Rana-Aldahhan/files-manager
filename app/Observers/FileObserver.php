@@ -9,7 +9,6 @@ class FileObserver
 {
     private function emptyGroupCache(File $file)
     {
-
         $file->groups->map(function ($group) {
             Cache::forget($group->id);
         });
