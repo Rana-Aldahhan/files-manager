@@ -94,5 +94,8 @@ class FilePolicy
     {
         return $user->isFileOwner($file) || $user->isAdmin();
     }
-
+    public function create(User $user)
+    {
+        return $user->ownedFiles()->get()->collect()->count() < env('MAX_USER_Files');
+    }
 }
