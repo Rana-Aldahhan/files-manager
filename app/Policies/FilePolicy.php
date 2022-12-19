@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\File;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Facades\Cache;
 
@@ -32,7 +33,9 @@ class FilePolicy
     public function view(User $user, File $file)
     {
         return $user->hasReservedFile($file) //case the file is reserved by the user
-            || ($file->isFree() && $user->hasAccessToFile($file)); //case the file is free and the user has access to it           
+            || ($file->isFree() && $user->hasAccessToFile($file)) //case the file is free and the user has access to it    
+            ? Response::allow()
+            : Response::deny('You can not view this file');       
     }
     /**
      * Determine if the given file can be checked-in by the user.
@@ -44,7 +47,9 @@ class FilePolicy
      */
     public function checkIn(User $user, File $file)
     {
-        return $file->isFree() && $user->hasAccessToFile($file); //file is free and the user has access to it            
+        return $file->isFree() && $user->hasAccessToFile($file) //file is free and the user has access to it
+        ? Response::allow()
+        : Response::deny('You can not check-in this file');            
     }
     /**
      * Determine if a collection of given files can be checked-in by the user.
@@ -66,7 +71,8 @@ class FilePolicy
                     $canCheckAll = false;
             });
         Cache::put('bulkCheckInFiles', $files);
-        return $canCheckAll;
+        return $canCheckAll? Response::allow()
+        : Response::deny('You can not check-in selected file'); 
     }
 
     /**
@@ -79,23 +85,33 @@ class FilePolicy
      */
     public function delete(User $user, File $file)
     {
-        return $file->isFree() && $user->isFileOwner($file); //file is free and user is file's owner              
+        return $file->isFree() && $user->isFileOwner($file) //file is free and user is file's owner    
+                ? Response::allow()
+                : Response::deny('You can not delete this file');          
     }
 
     public function edit(User $user, File $file)
     {
-        return $file->reserver_id == $user->id;
+        return $file->reserver_id == $user->id
+        ? Response::allow()
+        : Response::deny('You can not edit this file'); 
     }
     public function checkOut(User $user, File $file)
     {
-        return $file->reserver_id == $user->id;
+        return $file->reserver_id == $user->id
+        ? Response::allow()
+        : Response::deny('You can not check-out this file'); 
     }
     public function showHistory(User $user, File $file)
     {
-        return $user->isFileOwner($file) || $user->isAdmin();
+        return $user->isFileOwner($file) || $user->isAdmin()
+        ? Response::allow()
+        : Response::deny('You can not view history of this file'); 
     }
     public function create(User $user)
     {
-        return $user->ownedFiles()->get()->collect()->count() < config('file.max_user_files');
+        return $user->ownedFiles()->get()->collect()->count() < config('file.max_user_files')
+        ? Response::allow()
+        : Response::deny('You can not upload more files'); 
     }
 }

@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\User;
 use App\Models\Group;
 use App\Models\File;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class GroupPolicy
@@ -35,7 +36,9 @@ class GroupPolicy
             if($file->isReserved() && $group->members->find($file->reserver_id)!=null)//case the file is reserved by a group member
                 $groupHasReservedFiles=true;
         });
-        return $user->isGroupOwner($group) && !$groupHasReservedFiles;
+        return $user->isGroupOwner($group) && !$groupHasReservedFiles
+        ? Response::allow()
+        : Response::deny('You can not delete this group');
     }
     /**
      *Determine if the current user can add new members to the current group
@@ -47,7 +50,9 @@ class GroupPolicy
      */
     public function addMembers(User $user, Group $group)
     {
-        return $user->isGroupOwner($group);
+        return $user->isGroupOwner($group)
+        ? Response::allow()
+        : Response::deny('You can not add members to this group');
     }
     /**
      *Determine if the current user can remove a member in the current group
@@ -64,7 +69,9 @@ class GroupPolicy
             if($file->reserver_id==$member->id)
                 $memberHasReservedGroupFile=true;
         });
-        return $user->isGroupOwner($group) && !$memberHasReservedGroupFile;
+        return $user->isGroupOwner($group) && !$memberHasReservedGroupFile
+        ? Response::allow()
+        : Response::deny('You can not remove members from this group');
     }
    /**
      *Determine if the current user can add new files to the current group
@@ -85,7 +92,9 @@ class GroupPolicy
              $userIsOwnerofAllFile=false;
         });
         return $userIsOwnerofAllFile
-               && ($user->isMemberOfGroup($group) || $group->isPublicGroup());
+               && ($user->isMemberOfGroup($group) || $group->isPublicGroup())
+               ? Response::allow()
+               : Response::deny('You can not add files to this group');
     }
     /**
      *Determine if the current user can remove a file from the current group
@@ -100,7 +109,9 @@ class GroupPolicy
     {
         return $user->isFileOwner($file)
                && ($user->isMemberOfGroup($group) || $group->isPublicGroup())
-               && ($file->isFree() || $file->reserver_id=$user->id);//TODO it's additional to rquired checks but is nesscery
+               && ($file->isFree() || $file->reserver_id=$user->id)
+               ? Response::allow()
+               : Response::deny('You can not remove files from this group');
     }
     
 }
