@@ -26,7 +26,7 @@ class GroupService extends Service
         ]);
         $group->members()->attach(auth()->user()->id);
         collect($users)->map(function ($member) use ($group) {
-            $group->members()->attach($member);
+            $group->members()->syncWithoutDetaching($member);
         });
         collect($filesIds)->map(function ($fileId) use ($group) {
             $group->files()->attach($fileId);
@@ -37,7 +37,7 @@ class GroupService extends Service
 
     public function ownedGroups()
     {
-        return auth()->user()->ownedGroups()->get();
+        return auth()->user()->ownedGroups()->with(['files.reserver'])->get();
     }
 
 

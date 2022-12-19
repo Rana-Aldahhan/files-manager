@@ -9,6 +9,7 @@ use App\Interfaces\UserRepositoryInterface;
 use App\Models\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class FileService extends Service
 {
@@ -61,7 +62,7 @@ class FileService extends Service
      */
     public function getCheckedInFiles()
     {
-        $checkedInFiles = auth()->user()->reservedFiles()->get(['id', 'name', 'path', 'status']);
+        $checkedInFiles = auth()->user()->reservedFiles()->with(['reserver'])->get();
         return $checkedInFiles;
     }
 
@@ -80,11 +81,13 @@ class FileService extends Service
     public function checkin(File $file)
     {
         // ray()->showQueries();
-        $lockedFile = $this->fileRepository->lockForUpdate($file->id);
-        $lockedFile->status = 'checkedIn';
-        $lockedFile->reserver_id = auth()->id();
-        $lockedFile->save();
-        return $lockedFile;
+        return DB::transaction(function () use ($file) {
+            $lockedFile = $this->fileRepository->lockForUpdate($file->id);
+            $lockedFile->status = 'checkedIn';
+            $lockedFile->reserver_id = auth()->id();
+            $lockedFile->save();
+            return $lockedFile;
+        });
     }
 
     /**

@@ -49,9 +49,7 @@ class FileController extends Controller
     public function destroy(File $file)
     {
         $this->fileService->destroy($file);
-        return response()->json([
-            'data' => [],
-        ], 200);
+        return $this->successResponse([]);
     }
 
     /**
@@ -59,7 +57,7 @@ class FileController extends Controller
      */
     public function getCheckedInFiles()
     {
-        return $this->fileService->getCheckedInFiles();
+        return  $this->successResponse($this->fileService->getCheckedInFiles());
     }
     /**
      * show the specified resource 

@@ -30,6 +30,6 @@ class EloquentFileRepository implements FileRepositoryInterface
     }
     public function lockForUpdate($id)
     {
-        return File::lockForUpdate()->find($id);
+        return File::sharedLock()->find($id);
     }
 }
