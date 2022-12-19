@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Services;
+namespace App\Checks;
 
 use Spatie\Health\Checks\Check;
 use Spatie\Health\Checks\Result;

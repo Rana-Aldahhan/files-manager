@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Services\CpuLoadWindowsCheck;
-use App\Services\UsedDiskSpaceWindowsCheck;
+use App\Checks\CpuLoadWindowsCheck;
+use App\Checks\UsedDiskSpaceWindowsCheck;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Services;
+namespace App\Checks;
 
 use Illuminate\Support\Str;
 use Spatie\Health\Checks\Check;

@@ -57,7 +57,7 @@ class FilePolicy
     {
         $canCheckAll = true;
         $files = collect();
-        collect(request()->ids) //get files ids from request
+        collect(request()->ids)->unique() //get files ids from request
             ->map(function ($id) use (&$canCheckAll, $user, &$files) //map over them to check each file
             {
                 $file = File::find($id);
@@ -96,6 +96,6 @@ class FilePolicy
     }
     public function create(User $user)
     {
-        return $user->ownedFiles()->get()->collect()->count() < env('MAX_USER_Files');
+        return $user->ownedFiles()->get()->collect()->count() < config('file.max_user_files');
     }
 }

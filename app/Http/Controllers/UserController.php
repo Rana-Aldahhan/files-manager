@@ -4,32 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Interfaces\GroupRepositoryInterface;
 use App\Interfaces\UserRepositoryInterface;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    private $userRepo;
-    private $groupRepo;
 
-    public function __construct(UserRepositoryInterface $userRepo,
-    GroupRepositoryInterface $groupRepo){
-        $this->userRepo=$userRepo;
-        $this->groupRepo=$groupRepo;
+
+    public function __construct(private UserService $userService)
+    {
     }
 
     public function getJoinedGroups()
     {
-        $groups=auth()->user()->joinedGroups()->with(['files.reserver','members'])->get();
-        $groups->push($this->groupRepo->find(1));
-        $groups=$groups->sortBy('id')->values();
+        $groups = $this->userService->getJoinedGroups();
         return $this->successResponse($groups);
     }
     public function getOwnedFiles()
     {
-        $files=auth()->user()->ownedFiles()->with(['reserver'])->get();
+        $files = $this->userService->getOwnedFiles();
         return $this->successResponse($files);
     }
-    public function getAllUsers(){
-        return $this->successResponse($this->userRepo->all());
+    public function getAllUsers()
+    {
+        $allUsers = $this->userService->getAllUsers();
+        return $this->successResponse($allUsers);
     }
 }

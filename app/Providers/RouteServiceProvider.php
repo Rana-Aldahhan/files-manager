@@ -39,22 +39,21 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });
-        Route::bind('member', function($id, $route) {
+        Route::bind('member', function ($id, $route) {
             $user = app()->make(UserRepositoryInterface::class);
-        
+
             return $user->find($id);
         });
-        Route::bind('file', function($id, $route) {
+        Route::bind('file', function ($id, $route) {
             $file = app()->make(FileRepositoryInterface::class);
-        
+
             return $file->find($id);
         });
-        Route::bind('group', function($id, $route) {
+        Route::bind('group', function ($id, $route) {
             $group = app()->make(GroupRepositoryInterface::class);
-        
+
             return $group->find($id);
         });
-
     }
 
     /**
@@ -65,7 +64,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function configureRateLimiting()
     {
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(500)->by($request->user()?->id ?: $request->ip());
         });
     }
 }
